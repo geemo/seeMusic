@@ -1,8 +1,8 @@
-const webpack = require('webpack')
-const config = require('./webpack.base.conf')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const webpack = require('webpack');
+const config = require('./webpack.base.conf');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-config.devtool = '#eval-source-map'
+config.devtool = '#source-map';
 
 config.plugins = (config.plugins || []).concat([
     new HtmlWebpackPlugin({
@@ -11,17 +11,16 @@ config.plugins = (config.plugins || []).concat([
         // 所以使用了此插件其实就不管output.path的路径了，因为在index.html
         // 中引用的文件路径都被publicPath替换了，所以就相当于所有文件都在
         // http://localhost:8000/ 下面
-        filename: 'index.html', 
+        filename: 'index.html',
         template: 'src/index.template.html',
+        favicon:'src/assets/favicon.png',
         hash: true,
         minify: {
             removeComments: true
         }
     }),
-])
+]);
 
-// 这里把接口在/Server/下的所有路由都代理
-// 到远程服务器的8080端口上，以解决跨域问题
 config.devServer = {
     historyApiFallback: true,
     noInfo: true,
@@ -29,10 +28,10 @@ config.devServer = {
     proxy: {
         '/Server/**': {
             changeOrigin: true,
-            target: 'http://119.29.148.154:8080',
+            target: 'https://music.alexxd.com/',
             secure: false
         }
     }
-}
+};
 
 module.exports = config

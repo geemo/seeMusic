@@ -1,40 +1,50 @@
-// 待解决的问题：
-// 【已解决，给audio的autoplay属性绑定到playing上即可】1.点击播放按钮的时候按钮应立即改变成暂停样式，而不是等到开始播放的时候才变
-
-import * as types from 'store/mutation-types'
+import * as types from "store/mutation-types";
 
 const state = {
-    currentTrack: 0,
-    currentTrackInfo: {},
-    elapsed: 0,
+    currentTrackInfo: {
+        // 正在播放的歌曲的信息
+        /**
+         * cover,
+         * album,
+         * title,
+         * artist,
+         * duration,
+         * urls:{ 
+         *     q0,  
+         *     q1,
+         *     q2,
+         *     q3
+         * }
+         */
+        cover: 'http://o6x2vif88.bkt.clouddn.com/loadingImg.png',
+        album: 'loading..',
+        title: 'loading..',
+        artist: 'loading..',
+        duration: 0,
+        commentThreadId: 0,
+        // MP3 url, q0~q3代表不同品质
+        // q0为url，q1~q3均是一个加密id，
+        // 需向后台发送请求解密后才可得到真实url
+        urls: {
+            q0: '',
+            q1: '',
+            q2: '',
+            q3: ''
+        }
+    },
+    elapsed: 0, // 已播放时间
     playing: false,
     repeat: false,
-    repeatOne: false,
     shuffle: true,
     volume: 68,
     muted: false,
-    imgUrl: 'http://o6x2vif88.bkt.clouddn.com/loadingImg.png'
-}
+    onloadmp3Url: '' // 填进audio标签的url
+};
 
-// mutation 【专注处理此模块的数据，其他的什么都不干】
+//【专注处理此模块的数据】
 const mutations = {
-    // 播放(读进度条)
-    [types.PLAY](state) {
-        state.elapsed += 10000;
-    },
-    // 播放
-    [types.SET_PLAYING](state) {
-        state.playing = true;
-    },
-    // 暂停
-    [types.SET_PAUSE](state) {
+    [types.SET_PAUSE](state){
         state.playing = false;
-    },
-    // 切歌
-    [types.SELECT_TRACK](state, newtrack) {
-        state.currentTrack = newtrack;
-        state.playing = false;
-        state.elapsed = 0;
     },
     // 开启/关闭 重复播放
     [types.TOGGLE_REPEAT](state) {
@@ -55,81 +65,16 @@ const mutations = {
     // 进度条
     [types.UPDATE_PROGRESS_BAR](state, currTime) {
         state.elapsed = currTime;
+    },
+    // 更新url
+    [types.UPDATE_URL](state, {urlType, url}) {
+        state.currentTrackInfo.urls['q' + urlType] = url;
     }
-}
+};
 
-// actions 
-const actions = {
-    // 播放
-    play: ({ commit, state, dispatch }) => {
-        if (state.playing) {
-            return;
-        }
-        let timer = setInterval(() => {
-            if (audio.paused) {
-                clearInterval(timer);
-            }
-            if (state.elapsed >= (state.currentTrackInfo.duration - 100)) {
-                timer = null;
-                dispatch('skipForward');
-            }
-            commit(types.UPDATE_PROGRESS_BAR, audio.currentTime * 1000);
-        }, 1000);
-        audio.play();
-        commit(types.SET_PLAYING);
-    },
-    //暂停
-    pause: ({ commit, state, dispatch }) => {
-        if (!state.playing) {
-            return;
-        }
-        audio.pause();
-        commit(types.SET_PAUSE);
-    },
-    // 下一首
-    skipForward: ({ commit, state, dispatch }) => {
-        let newtrack = state.currentTrack + 1;
-        newtrack = newtrack % state.songlistLength;
-        dispatch('selectTrack', { newtrack: newtrack });
-    },
-    // 上一首
-    skipBack: ({ commit, state, dispatch }) => {
-        let newtrack = state.currentTrack;
-
-        if (state.elapsed < 2000) {
-            newtrack = newtrack - 1;
-        }
-        if (newtrack < 0) {
-            newtrack = 0;
-        }
-
-        dispatch('selectTrack', { newtrack: newtrack });
-    },
-    // 跳转到下标为'newtrack'的这首歌
-    selectTrack: ({ commit, state, dispatch }, { newtrack, isSelected }) => {
-        if (state.shuffle && !isSelected) {
-            newtrack = Math.floor(Math.random() * (state.songlistLength - 1));
-        }
-        commit(types.SELECT_TRACK, newtrack);
-        commit(types.INIT_PLAYER);
-
-        dispatch('play');
-    },
-    // 静音
-    mute: ({ commit, state, dispatch }) => {
-        if (state.muted) {
-            audio.muted = false;
-            commit(types.CHANGE_MUTE_STATE);
-        } else {
-            audio.muted = true;
-            commit(types.CHANGE_MUTE_STATE);
-        }
-    }
-}
 
 
 export default {
     state,
-    mutations,
-    actions
+    mutations
 }

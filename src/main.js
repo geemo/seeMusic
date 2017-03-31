@@ -1,14 +1,24 @@
-import './css/main.css'
-import 'font-awesome/css/font-awesome.css'
+import './css/main.scss'
+import 'csshake/dist/csshake.min.css'
+import 'css/textinput/input-text-effect.css'
 import Vue from 'vue'
-import App from './components/App.vue'
-import {time} from './filters.js'
+import filters from './filters.js'
+import router from './router'
+import App from './components/App'
+import Loading from 'components/Loading'
 
-//注册filter
-Vue.filter('time', time);
-
-//挂载到index.html
-new Vue({
-    el: '#app',
-    components: { App }    
+Object.keys(filters).forEach(key => {
+    Vue.filter(key, filters[key])
 });
+
+// 全局注册Loading组件
+Vue.component('Loading', {...Loading});
+
+const app = new Vue({
+    router,
+    ...App
+}).$mount('#app');
+
+
+
+
